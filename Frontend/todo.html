@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main Container -->
+    <div id="main-container">
+        <!-- Login Section -->
+        <div id="login-section">
+            <h1>Welcome to the Todo App</h1>
+            <a href="/auth/google"><button>Login with Google</button></a>
+        </div>
+
+        <!-- Todo Section (hidden initially) -->
+        <div id="todo-section" style="display:none;">
+            <h2>Your Todos</h2>
+            <div id="todo-form">
+                <div class="form-group">
+                    <input type="text" placeholder="Title" id="title">
+                </div>
+                <div class="form-group">
+                    <input type="text" placeholder="Description" id="description">
+                </div>
+                <div class="form-group">
+                    <input type="datetime-local" id="reminder" placeholder="Set a reminder">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="timer" placeholder="Timer in minutes">
+                </div>
+                <button onclick="addtodo()">Add Todo</button>
+            </div>
+            <div id="todos"></div>
+            <a href="/logout"><button>Logout</button></a>
+        </div>
+    </div>
+
+    <script>
+        let globalid = 1;
+
+        function markasdone(todoID) {
+            const parent = document.getElementById(todoID);
+            parent.children[4].innerHTML = "Done!";
+            parent.classList.add('done');
+        }
+
+        function deleteTodo(todoID) {
+            const todo = document.getElementById(todoID);
+            clearInterval(todo.timer);
+            todo.remove();
+        }
+
+        function editTodo(todoID) {
+            const todo = document.getElementById(todoID);
+            const titleElem = todo.children[0];
+            const descElem = todo.children[1];
+            const reminderElem = todo.children[2];
+            const timerElem = todo.children[3];
+
+            // Replace the elements with input fields to allow editing
+            const titleInput = document.createElement("input");
+            titleInput.type = "text";
+            titleInput.value = titleElem.innerText;
+            titleElem.replaceWith(titleInput);
+
+            const descInput = document.createElement("input");
+            descInput.type = "text";
+            descInput.value = descElem.innerText;
+            descElem.replaceWith(descInput);
+
+            const reminderInput = document.createElement("input");
+            reminderInput.type = "datetime-local";
+            const reminderDate = new Date(reminderElem.innerText.split(': ')[1]);
+            reminderInput.value = reminderDate.toISOString().slice(0, -8);
+            reminderElem.replaceWith(reminderInput);
+
+            const timerInput = document.createElement("input");
+            timerInput.type = "number";
+            timerInput.value = timerElem.innerText.split(': ')[1].split(' ')[0];
+            timerElem.replaceWith(timerInput);
+
+            // Change the "Edit" button to a "Save" button
+            const editButton = todo.children[6];
+            editButton.innerHTML = "Save";
+            editButton.setAttribute("onclick", `saveTodo(${todoID})`);
+        }
+
+        function saveTodo(todoID) {
+            const todo = document.getElementById(todoID);
+            const titleInput = todo.children[0];
+            const descInput = todo.children[1];
+            const reminderInput = todo.children[2];
+            const timerInput = todo.children[3];
+
+            // Replace the input fields back to text
+            const titleElem = document.createElement("div");
+            titleElem.innerHTML = `<strong>${titleInput.value}</strong>`;
+            titleInput.replaceWith(titleElem);
+
+            const descElem = document.createElement("div");
+            descElem.innerHTML = descInput.value;
+            descInput.replaceWith(descElem);
+
+            const reminderElem = document.createElement("div");
+            reminderElem.innerHTML = `Reminder: ${new Date(reminderInput.value).toLocaleString()}`;
+            reminderInput.replaceWith(reminderElem);
+
+            const timerElem = document.createElement("div");
+            timerElem.innerHTML = `Timer: ${timerInput.value} mins`;
+            timerInput.replaceWith(timerElem);
+
+            // Reset the "Save" button back to "Edit"
+            const editButton = todo.children[6];
+            editButton.innerHTML = "Edit";
+            editButton.setAttribute("onclick", `editTodo(${todoID})`);
+
+            // Update the reminder and timer functionality if necessary
+            clearTimeout(todo.timer);
+            setTimer(parseInt(timerInput.value), todoID);
+            setReminder(reminderInput.value, todoID);
+        }
+
+        function createChild(title, description, reminder, timer, id) {
+            if (!title || !description) {
+                console.error("Title or description is missing.");
+                return null;
+            }
+
+            const child = document.createElement("div");
+            child.classList.add('todo-item');
+            child.setAttribute("id", id);
+
+            const firstgrandchild = document.createElement("div");
+            firstgrandchild.innerHTML = `<strong>${title}</strong>`;
+            const secondgrandchild = document.createElement("div");
+            secondgrandchild.innerHTML = description;
+
+            const reminderElem = document.createElement("div");
+            reminderElem.innerHTML = `Reminder: ${new Date(reminder).toLocaleString()}`;
+
+            const timerElem = document.createElement("div");
+            timerElem.innerHTML = `Timer: ${timer} mins`;
+
+            const markButton = document.createElement("button");
+            markButton.innerHTML = "Mark as Done";
+            markButton.setAttribute("onclick", `markasdone(${id})`);
+
+            const deleteButton = document.createElement("button");
+            deleteButton.innerHTML = "Delete";
+            deleteButton.setAttribute("onclick", `deleteTodo(${id})`);
+
+            const editButton = document.createElement("button");
+            editButton.innerHTML = "Edit";
+            editButton.setAttribute("onclick", `editTodo(${id})`);
+
+            child.appendChild(firstgrandchild);
+            child.appendChild(secondgrandchild);
+            child.appendChild(reminderElem);
+            child.appendChild(timerElem);
+            child.appendChild(markButton);
+            child.appendChild(deleteButton);
+            child.appendChild(editButton);
+
+            console.log("Child element created:", child);
+
+            return child;
+        }
+
+        function addtodo() {
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            const reminder = document.getElementById("reminder").value;
+            const timer = document.getElementById("timer").value;
+            const parent = document.getElementById("todos");
+
+            console.log("Title:", title);
+            console.log("Description:", description);
+            console.log("Reminder:", reminder);
+            console.log("Timer:", timer);
+
+            if (!title || !description) {
+                alert("Please fill in both the title and description.");
+                return;
+            }
+
+            const newTask = createChild(title, description, reminder, timer, globalid++);
+
+            if (newTask) {
+                parent.appendChild(newTask);
+                console.log("Todo appended:", newTask);
+
+                // Clear the input fields
+                document.getElementById("title").value = "";
+                document.getElementById("description").value = "";
+                document.getElementById("reminder").value = "";
+                document.getElementById("timer").value = "";
+            } else {
+                console.error("Failed to create a new task.");
+            }
+        }
+
+        function setReminder(reminder, id) {
+            const reminderTime = new Date(reminder).getTime();
+            const currentTime = new Date().getTime();
+            const timeDiff = reminderTime - currentTime;
+
+            if (timeDiff > 0) {
+                setTimeout(() => {
+                    alert(`Reminder for Todo #${id}: Time to complete your task!`);
+                }, timeDiff);
+            }
+        }
+
+        function setTimer(timer, id) {
+            const timeInMs = timer * 60000;
+            const todo = document.getElementById(id);
+            todo.timer = setTimeout(() => {
+                alert(`Timer for Todo #${id}: Time is up!`);
+            }, timeInMs);
+        }
+
+        // Function to show or hide sections based on login status
+        function checkLoginStatus() {
+            // For demo purposes, this simulates a login check
+            // Replace with actual logic to check if user is logged in
+            const isLoggedIn = false; // Replace this with actual login status check
+
+            if (isLoggedIn) {
+                document.getElementById("login-section").style.display = "none";
+                document.getElementById("todo-section").style.display = "block";
+            } else {
+                document.getElementById("login-section").style.display = "block";
+                document.getElementById("todo-section").style.display = "none";
+            }
+        }
+
+        // Call checkLoginStatus on page load
+        window.onload = checkLoginStatus;
+    </script>
+</body>
+</html>
