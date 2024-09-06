@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const GoogleStrategy = require('passport-google-oauth').Strategy;
 const User = require('./models/User');
 const Todo = require('./models/Todo'); // Add this if you create a Todo model
 require('dotenv').config();

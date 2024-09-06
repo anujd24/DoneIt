@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Dark Mode Toggle -->
+    <div id="dark-mode-toggle">
+        <label for="dark-mode-switch">Dark Mode</label>
+        <input type="checkbox" id="dark-mode-switch" onchange="toggleDarkMode()">
+    </div>
+
     <!-- Main Container -->
     <div id="main-container">
         <!-- Login Section -->
@@ -238,7 +244,68 @@
         }
 
         // Call checkLoginStatus on page load
-        window.onload = checkLoginStatus;
+        window.onload = () => {
+            checkLoginStatus();
+
+            // Load dark mode preference
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-switch').checked = true;
+            }
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const isChecked = document.getElementById('dark-mode-switch').checked;
+            if (isChecked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
     </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #main-container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .todo-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .done {
+            background-color: #d4edda;
+            text-decoration: line-through;
+        }
+        #dark-mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+        .dark-mode .todo-item {
+            border-color: #555;
+            background-color: #444;
+        }
+    </style>
 </body>
 </html>

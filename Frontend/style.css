@@ -21,13 +21,60 @@ body {
 
 body.dark-mode {
     background-color: #333;
+    background-image: none; /* Remove the background image for dark mode */
     color: #fff;
 }
+
 body.dark-mode button {
     background-color: #444;
     color: #fff;
 }
 
+body.dark-mode input[type="text"],
+body.dark-mode input[type="datetime-local"],
+body.dark-mode input[type="number"] {
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #777;
+}
+
+body.dark-mode #app {
+    background-color: rgba(50, 50, 50, 0.8); /* Darker transparent background */
+}
+
+/* Dark mode h1 styling */
+body.dark-mode h1 {
+    color: #ccc;
+}
+
+/* Dark mode todo item styling */
+body.dark-mode .todo-item {
+    background-color: #444;
+    border: 1px solid #666;
+    color: #fff;
+}
+
+body.dark-mode .todo-item.done {
+    background-color: #2a5934;
+    border-color: #1c3f23;
+}
+
+/* Dark mode buttons */
+body.dark-mode .todo-item > button {
+    background-color: #555;
+}
+
+body.dark-mode .todo-item > button.mark-done {
+    background-color: #357a38;
+}
+
+body.dark-mode .todo-item > button.delete-btn {
+    background-color: #c82333;
+}
+
+body.dark-mode .todo-item > button.edit-btn {
+    background-color: #ffc107;
+}
 
 #app {
     max-width: 600px;
