@@ -5,6 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DoneIt</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #main-container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .todo-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .done {
+            background-color: #d4edda;
+            text-decoration: line-through;
+        }
+        #dark-mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+        .dark-mode .todo-item {
+            border-color: #555;
+            background-color: #444;
+        }
+    </style>
 </head>
 <body>
     <!-- Dark Mode Toggle -->
@@ -175,36 +214,32 @@
             return child;
         }
 
-        function addtodo() {
+        async function addtodo() {
             const title = document.getElementById("title").value;
             const description = document.getElementById("description").value;
             const reminder = document.getElementById("reminder").value;
             const timer = document.getElementById("timer").value;
-            const parent = document.getElementById("todos");
 
-            console.log("Title:", title);
-            console.log("Description:", description);
-            console.log("Reminder:", reminder);
-            console.log("Timer:", timer);
+            try {
+                const response = await fetch('/api/todos', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, description, reminder, timer })
+                });
 
-            if (!title || !description) {
-                alert("Please fill in both the title and description.");
-                return;
-            }
+                if (!response.ok) {
+                    throw new Error('Failed to add todo');
+                }
 
-            const newTask = createChild(title, description, reminder, timer, globalid++);
-
-            if (newTask) {
+                const newTodo = await response.json();
+                const parent = document.getElementById("todos");
+                const newTask = createChild(title, description, reminder, timer, newTodo._id);
                 parent.appendChild(newTask);
-                console.log("Todo appended:", newTask);
-
-                // Clear the input fields
-                document.getElementById("title").value = "";
-                document.getElementById("description").value = "";
-                document.getElementById("reminder").value = "";
-                document.getElementById("timer").value = "";
-            } else {
-                console.error("Failed to create a new task.");
+            } catch (error) {
+                alert(error.message);
             }
         }
 
@@ -267,45 +302,5 @@
             }
         }
     </script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        #main-container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 10px;
-        }
-        .todo-item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        .done {
-            background-color: #d4edda;
-            text-decoration: line-through;
-        }
-        #dark-mode-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        /* Dark Mode Styles */
-        .dark-mode {
-            background-color: #333;
-            color: #f4f4f4;
-        }
-        .dark-mode .todo-item {
-            border-color: #555;
-            background-color: #444;
-        }
-    </style>
 </body>
 </html>
