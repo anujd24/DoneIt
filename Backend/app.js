@@ -2,10 +2,7 @@
 
 const express = require('express');
 const mongoose = require('mongoose');
-const session = require('express-session');
-const passport = require('passport');
-// const GoogleStrategy = require('passport-google-oauth').Strategy;
-const OAuthStrategy = require('passport-oauth1').Strategy;
+const jwt = require("jsonwebtoken");
 const User = require('./models/User');
 const Todo = require('./models/Todo'); // Add this if you create a Todo model
 require('dotenv').config();
@@ -14,57 +11,34 @@ const app = express();
 
 // Middleware for handling JSON requests
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.error('MongoDB connection error:', err));
 
-// Middleware for handling sessions
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret-key',
-    resave: false,
-    saveUninitialized: true,
-}));
-
-// Passport.js middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-
-// Serialization and Deserialization
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-        done(err, user);
-    });
-});
 
 // Auth Routes
-app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
-}));
 
-app.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: '/login'
-}), (req, res) => {
-    res.redirect('/todos');  // Redirect to todos page after successful login
-});
 
 // Middleware to check if user is authenticated
+
 const isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+
+    try {
+        const decoded = verifyToken(token);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid token' });
     }
-    res.redirect('/login');
 };
 
 // Todo Routes (Add these if you are managing todos)
+// Todo Routes
 app.post('/todos', isAuthenticated, async (req, res) => {
     const { title, description, reminder, timer } = req.body;
     try {
