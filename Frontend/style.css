@@ -19,6 +19,16 @@ body {
     background-size: cover;
 }
 
+body.dark-mode {
+    background-color: #333;
+    color: #fff;
+}
+body.dark-mode button {
+    background-color: #444;
+    color: #fff;
+}
+
+
 #app {
     max-width: 600px;
     width: 100%;
@@ -59,13 +69,16 @@ button {
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
-    margin: 5px;
+    margin: 5px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
     background-color: #0056b3;
     transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 
 /* Styling for todo items */
 #todos {
@@ -97,6 +110,7 @@ button:hover {
 }
 
 .todo-item > button {
+    display: inline-block;
     align-self: flex-start;
     padding: 5px 10px;
     margin-right: 5px;
@@ -106,6 +120,7 @@ button:hover {
     cursor: pointer;
     transition: background-color 0.3s;
 }
+
 
 .todo-item > button.mark-done {
     background-color: #28a745;
