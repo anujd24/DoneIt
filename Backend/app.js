@@ -4,7 +4,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth').Strategy;
+// const GoogleStrategy = require('passport-google-oauth').Strategy;
+const OAuthStrategy = require('passport-oauth1').Strategy;
 const User = require('./models/User');
 const Todo = require('./models/Todo'); // Add this if you create a Todo model
 require('dotenv').config();
@@ -31,26 +32,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Passport Google OAuth strategy
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.BASE_URL}/auth/google/callback`
-}, async (accessToken, refreshToken, profile, done) => {
-    const { id, displayName, emails } = profile;
-    const email = emails[0].value;
-    
-    try {
-        let user = await User.findOne({ googleId: id });
-        if (!user) {
-            user = new User({ googleId: id, name: displayName, email });
-            await user.save();
-        }
-        done(null, user);
-    } catch (error) {
-        done(error);
-    }
-}));
+
 
 // Serialization and Deserialization
 passport.serializeUser((user, done) => {
