@@ -18,16 +18,16 @@ const todoSchema = new mongoose.Schema({
         type: Date 
     },
     timer: { 
-        type: Number, // Timer in minutes
+        type: Number, 
         default: 0 
     },
     completed: { 
         type: Boolean, 
         default: false 
     },
-}, { timestamps: true }); // Automatically add createdAt and updatedAt timestamps
+}, { timestamps: true }); 
 
-// Create the Todo model
+
 const Todo = mongoose.model('Todo', todoSchema);
 
 module.exports = Todo;

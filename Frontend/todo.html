@@ -263,32 +263,54 @@
             }, timeInMs);
         }
 
-        // Function to show or hide sections based on login status
         function checkLoginStatus() {
-            // For demo purposes, this simulates a login check
-            // Replace with actual logic to check if user is logged in
-            const isLoggedIn = false; // Replace this with actual login status check
+    const token = localStorage.getItem('token');
 
-            if (isLoggedIn) {
+    if (token) {
+        // Verify token with backend
+        fetch('/api/verify-token', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
                 document.getElementById("login-section").style.display = "none";
                 document.getElementById("todo-section").style.display = "block";
             } else {
                 document.getElementById("login-section").style.display = "block";
                 document.getElementById("todo-section").style.display = "none";
+                localStorage.removeItem('token'); // Remove invalid token
             }
-        }
+        })
+        .catch(error => {
+            console.error('Error verifying token:', error);
+            document.getElementById("login-section").style.display = "block";
+            document.getElementById("todo-section").style.display = "none";
+            localStorage.removeItem('token'); // Remove invalid token
+        });
+    } else {
+        document.getElementById("login-section").style.display = "block";
+        document.getElementById("todo-section").style.display = "none";
+    }
+}
+
+        
 
         // Call checkLoginStatus on page load
-        window.onload = () => {
-            checkLoginStatus();
+window.onload = () => {
+    checkLoginStatus(); // Check if the user is logged in and update UI
 
-            // Load dark mode preference
-            const darkMode = localStorage.getItem('darkMode');
-            if (darkMode === 'enabled') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('dark-mode-switch').checked = true;
-            }
-        }
+    // Load dark mode preference
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'enabled') {
+        document.body.classList.add('dark-mode'); // Apply dark mode styles
+        document.getElementById('dark-mode-switch').checked = true; // Set dark mode toggle
+    }
+};
+
 
         // Dark Mode Toggle
         function toggleDarkMode() {
