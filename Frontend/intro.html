@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoneIt</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #main-container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .todo-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .done {
+            background-color: #d4edda;
+            text-decoration: line-through;
+        }
+        #dark-mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+        .dark-mode .todo-item {
+            border-color: #555;
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <div id="dark-mode-toggle">
+        <label for="dark-mode-switch">Dark Mode</label>
+        <input type="checkbox" id="dark-mode-switch" onchange="toggleDarkMode()">
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-container">
+        <!-- Login Section -->
+        <div id="login-section">
+            <h1>Welcome to the DoneIt!</h1>
+            <a href="login.html"><button >Login</button></a>
+        </div>
+
+        <!-- Todo Section (hidden initially) -->
+        
+</body>
+</html>

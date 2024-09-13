@@ -3,326 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoneIt</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        #main-container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 10px;
-        }
-        .todo-item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        .done {
-            background-color: #d4edda;
-            text-decoration: line-through;
-        }
-        #dark-mode-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        /* Dark Mode Styles */
-        .dark-mode {
-            background-color: #333;
-            color: #f4f4f4;
-        }
-        .dark-mode .todo-item {
-            border-color: #555;
-            background-color: #444;
-        }
-    </style>
+    <title>DoneIt/title>
 </head>
 <body>
-    <!-- Dark Mode Toggle -->
-    <div id="dark-mode-toggle">
-        <label for="dark-mode-switch">Dark Mode</label>
-        <input type="checkbox" id="dark-mode-switch" onchange="toggleDarkMode()">
-    </div>
-
-    <!-- Main Container -->
-    <div id="main-container">
-        <!-- Login Section -->
-        <div id="login-section">
-            <h1>Welcome to the DoneIt!</h1>
-            <a href="/auth/google"><button>Login with Google</button></a>
-        </div>
-
-        <!-- Todo Section (hidden initially) -->
-        <div id="todo-section" style="display:none;">
-            <h2>Your Todos</h2>
-            <div id="todo-form">
-                <div class="form-group">
-                    <input type="text" placeholder="Title" id="title">
-                </div>
-                <div class="form-group">
-                    <input type="text" placeholder="Description" id="description">
-                </div>
-                <div class="form-group">
-                    <input type="datetime-local" id="reminder" placeholder="Set a reminder">
-                </div>
-                <div class="form-group">
-                    <input type="number" id="timer" placeholder="Timer in minutes">
-                </div>
-                <button onclick="addtodo()">Add Todo</button>
+    <div id="todo-section" style="display:none;">
+        <h2>Your Todos</h2>
+        <div id="todo-form">
+            <div class="form-group">
+                <input type="text" placeholder="Title" id="title">
             </div>
-            <div id="todos"></div>
-            <a href="/logout"><button>Logout</button></a>
+            <div class="form-group">
+                <input type="text" placeholder="Description" id="description">
+            </div>
+            <div class="form-group">
+                <input type="datetime-local" id="reminder" placeholder="Set a reminder">
+            </div>
+            <div class="form-group">
+                <input type="number" id="timer" placeholder="Timer in minutes">
+            </div>
+            <button onclick="addtodo()">Add Todo</button>
         </div>
+        <div id="todos"></div>
+        <a href="/logout"><button>Logout</button></a>
     </div>
+</div>
 
-    <script>
-        let globalid = 1;
+<script>
+    let globalid = 1;
 
-        function markasdone(todoID) {
-            const parent = document.getElementById(todoID);
-            parent.children[4].innerHTML = "Done!";
-            parent.classList.add('done');
+    function markasdone(todoID) {
+        const parent = document.getElementById(todoID);
+        parent.children[4].innerHTML = "Done!";
+        parent.classList.add('done');
+    }
+
+    function deleteTodo(todoID) {
+        const todo = document.getElementById(todoID);
+        clearInterval(todo.timer);
+        todo.remove();
+    }
+
+    function editTodo(todoID) {
+        const todo = document.getElementById(todoID);
+        const titleElem = todo.children[0];
+        const descElem = todo.children[1];
+        const reminderElem = todo.children[2];
+        const timerElem = todo.children[3];
+
+        // Replace the elements with input fields to allow editing
+        const titleInput = document.createElement("input");
+        titleInput.type = "text";
+        titleInput.value = titleElem.innerText;
+        titleElem.replaceWith(titleInput);
+
+        const descInput = document.createElement("input");
+        descInput.type = "text";
+        descInput.value = descElem.innerText;
+        descElem.replaceWith(descInput);
+
+        const reminderInput = document.createElement("input");
+        reminderInput.type = "datetime-local";
+        const reminderDate = new Date(reminderElem.innerText.split(': ')[1]);
+        reminderInput.value = reminderDate.toISOString().slice(0, -8);
+        reminderElem.replaceWith(reminderInput);
+
+        const timerInput = document.createElement("input");
+        timerInput.type = "number";
+        timerInput.value = timerElem.innerText.split(': ')[1].split(' ')[0];
+        timerElem.replaceWith(timerInput);
+
+        // Change the "Edit" button to a "Save" button
+        const editButton = todo.children[6];
+        editButton.innerHTML = "Save";
+        editButton.setAttribute("onclick", `saveTodo(${todoID})`);
+    }
+
+    function saveTodo(todoID) {
+        const todo = document.getElementById(todoID);
+        const titleInput = todo.children[0];
+        const descInput = todo.children[1];
+        const reminderInput = todo.children[2];
+        const timerInput = todo.children[3];
+
+        // Replace the input fields back to text
+        const titleElem = document.createElement("div");
+        titleElem.innerHTML = `<strong>${titleInput.value}</strong>`;
+        titleInput.replaceWith(titleElem);
+
+        const descElem = document.createElement("div");
+        descElem.innerHTML = descInput.value;
+        descInput.replaceWith(descElem);
+
+        const reminderElem = document.createElement("div");
+        reminderElem.innerHTML = `Reminder: ${new Date(reminderInput.value).toLocaleString()}`;
+        reminderInput.replaceWith(reminderElem);
+
+        const timerElem = document.createElement("div");
+        timerElem.innerHTML = `Timer: ${timerInput.value} mins`;
+        timerInput.replaceWith(timerElem);
+
+        // Reset the "Save" button back to "Edit"
+        const editButton = todo.children[6];
+        editButton.innerHTML = "Edit";
+        editButton.setAttribute("onclick", `editTodo(${todoID})`);
+
+        // Update the reminder and timer functionality if necessary
+        clearTimeout(todo.timer);
+        setTimer(parseInt(timerInput.value), todoID);
+        setReminder(reminderInput.value, todoID);
+    }
+
+    function createChild(title, description, reminder, timer, id) {
+        if (!title || !description) {
+            console.error("Title or description is missing.");
+            return null;
         }
 
-        function deleteTodo(todoID) {
-            const todo = document.getElementById(todoID);
-            clearInterval(todo.timer);
-            todo.remove();
-        }
+        const child = document.createElement("div");
+        child.classList.add('todo-item');
+        child.setAttribute("id", id);
 
-        function editTodo(todoID) {
-            const todo = document.getElementById(todoID);
-            const titleElem = todo.children[0];
-            const descElem = todo.children[1];
-            const reminderElem = todo.children[2];
-            const timerElem = todo.children[3];
+        const firstgrandchild = document.createElement("div");
+        firstgrandchild.innerHTML = `<strong>${title}</strong>`;
+        const secondgrandchild = document.createElement("div");
+        secondgrandchild.innerHTML = description;
 
-            // Replace the elements with input fields to allow editing
-            const titleInput = document.createElement("input");
-            titleInput.type = "text";
-            titleInput.value = titleElem.innerText;
-            titleElem.replaceWith(titleInput);
+        const reminderElem = document.createElement("div");
+        reminderElem.innerHTML = `Reminder: ${new Date(reminder).toLocaleString()}`;
 
-            const descInput = document.createElement("input");
-            descInput.type = "text";
-            descInput.value = descElem.innerText;
-            descElem.replaceWith(descInput);
+        const timerElem = document.createElement("div");
+        timerElem.innerHTML = `Timer: ${timer} mins`;
 
-            const reminderInput = document.createElement("input");
-            reminderInput.type = "datetime-local";
-            const reminderDate = new Date(reminderElem.innerText.split(': ')[1]);
-            reminderInput.value = reminderDate.toISOString().slice(0, -8);
-            reminderElem.replaceWith(reminderInput);
+        const markButton = document.createElement("button");
+        markButton.innerHTML = "Mark as Done";
+        markButton.setAttribute("onclick", `markasdone(${id})`);
 
-            const timerInput = document.createElement("input");
-            timerInput.type = "number";
-            timerInput.value = timerElem.innerText.split(': ')[1].split(' ')[0];
-            timerElem.replaceWith(timerInput);
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "Delete";
+        deleteButton.setAttribute("onclick", `deleteTodo(${id})`);
 
-            // Change the "Edit" button to a "Save" button
-            const editButton = todo.children[6];
-            editButton.innerHTML = "Save";
-            editButton.setAttribute("onclick", `saveTodo(${todoID})`);
-        }
+        const editButton = document.createElement("button");
+        editButton.innerHTML = "Edit";
+        editButton.setAttribute("onclick", `editTodo(${id})`);
 
-        function saveTodo(todoID) {
-            const todo = document.getElementById(todoID);
-            const titleInput = todo.children[0];
-            const descInput = todo.children[1];
-            const reminderInput = todo.children[2];
-            const timerInput = todo.children[3];
+        child.appendChild(firstgrandchild);
+        child.appendChild(secondgrandchild);
+        child.appendChild(reminderElem);
+        child.appendChild(timerElem);
+        child.appendChild(markButton);
+        child.appendChild(deleteButton);
+        child.appendChild(editButton);
 
-            // Replace the input fields back to text
-            const titleElem = document.createElement("div");
-            titleElem.innerHTML = `<strong>${titleInput.value}</strong>`;
-            titleInput.replaceWith(titleElem);
+        console.log("Child element created:", child);
 
-            const descElem = document.createElement("div");
-            descElem.innerHTML = descInput.value;
-            descInput.replaceWith(descElem);
+        return child;
+    }
 
-            const reminderElem = document.createElement("div");
-            reminderElem.innerHTML = `Reminder: ${new Date(reminderInput.value).toLocaleString()}`;
-            reminderInput.replaceWith(reminderElem);
+    async function addtodo() {
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+        const reminder = document.getElementById("reminder").value;
+        const timer = document.getElementById("timer").value;
 
-            const timerElem = document.createElement("div");
-            timerElem.innerHTML = `Timer: ${timerInput.value} mins`;
-            timerInput.replaceWith(timerElem);
+        try {
+            const response = await fetch('/api/todos', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, description, reminder, timer })
+            });
 
-            // Reset the "Save" button back to "Edit"
-            const editButton = todo.children[6];
-            editButton.innerHTML = "Edit";
-            editButton.setAttribute("onclick", `editTodo(${todoID})`);
-
-            // Update the reminder and timer functionality if necessary
-            clearTimeout(todo.timer);
-            setTimer(parseInt(timerInput.value), todoID);
-            setReminder(reminderInput.value, todoID);
-        }
-
-        function createChild(title, description, reminder, timer, id) {
-            if (!title || !description) {
-                console.error("Title or description is missing.");
-                return null;
+            if (!response.ok) {
+                throw new Error('Failed to add todo');
             }
 
-            const child = document.createElement("div");
-            child.classList.add('todo-item');
-            child.setAttribute("id", id);
-
-            const firstgrandchild = document.createElement("div");
-            firstgrandchild.innerHTML = `<strong>${title}</strong>`;
-            const secondgrandchild = document.createElement("div");
-            secondgrandchild.innerHTML = description;
-
-            const reminderElem = document.createElement("div");
-            reminderElem.innerHTML = `Reminder: ${new Date(reminder).toLocaleString()}`;
-
-            const timerElem = document.createElement("div");
-            timerElem.innerHTML = `Timer: ${timer} mins`;
-
-            const markButton = document.createElement("button");
-            markButton.innerHTML = "Mark as Done";
-            markButton.setAttribute("onclick", `markasdone(${id})`);
-
-            const deleteButton = document.createElement("button");
-            deleteButton.innerHTML = "Delete";
-            deleteButton.setAttribute("onclick", `deleteTodo(${id})`);
-
-            const editButton = document.createElement("button");
-            editButton.innerHTML = "Edit";
-            editButton.setAttribute("onclick", `editTodo(${id})`);
-
-            child.appendChild(firstgrandchild);
-            child.appendChild(secondgrandchild);
-            child.appendChild(reminderElem);
-            child.appendChild(timerElem);
-            child.appendChild(markButton);
-            child.appendChild(deleteButton);
-            child.appendChild(editButton);
-
-            console.log("Child element created:", child);
-
-            return child;
+            const newTodo = await response.json();
+            const parent = document.getElementById("todos");
+            const newTask = createChild(title, description, reminder, timer, newTodo._id);
+            parent.appendChild(newTask);
+        } catch (error) {
+            alert(error.message);
         }
+    }
 
-        async function addtodo() {
-            const title = document.getElementById("title").value;
-            const description = document.getElementById("description").value;
-            const reminder = document.getElementById("reminder").value;
-            const timer = document.getElementById("timer").value;
+    function setReminder(reminder, id) {
+        const reminderTime = new Date(reminder).getTime();
+        const currentTime = new Date().getTime();
+        const timeDiff = reminderTime - currentTime;
 
-            try {
-                const response = await fetch('/api/todos', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ title, description, reminder, timer })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to add todo');
-                }
-
-                const newTodo = await response.json();
-                const parent = document.getElementById("todos");
-                const newTask = createChild(title, description, reminder, timer, newTodo._id);
-                parent.appendChild(newTask);
-            } catch (error) {
-                alert(error.message);
-            }
+        if (timeDiff > 0) {
+            setTimeout(() => {
+                alert(`Reminder for Todo #${id}: Time to complete your task!`);
+            }, timeDiff);
         }
+    }
 
-        function setReminder(reminder, id) {
-            const reminderTime = new Date(reminder).getTime();
-            const currentTime = new Date().getTime();
-            const timeDiff = reminderTime - currentTime;
+    function setTimer(timer, id) {
+        const timeInMs = timer * 60000;
+        const todo = document.getElementById(id);
+        todo.timer = setTimeout(() => {
+            alert(`Timer for Todo #${id}: Time is up!`);
+        }, timeInMs);
+    }
 
-            if (timeDiff > 0) {
-                setTimeout(() => {
-                    alert(`Reminder for Todo #${id}: Time to complete your task!`);
-                }, timeDiff);
-            }
+    function checkLoginStatus() {
+const token = localStorage.getItem('token');
+
+if (token) {
+    // Verify token with backend
+    fetch('/api/verify-token', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         }
-
-        function setTimer(timer, id) {
-            const timeInMs = timer * 60000;
-            const todo = document.getElementById(id);
-            todo.timer = setTimeout(() => {
-                alert(`Timer for Todo #${id}: Time is up!`);
-            }, timeInMs);
-        }
-
-        function checkLoginStatus() {
-    const token = localStorage.getItem('token');
-
-    if (token) {
-        // Verify token with backend
-        fetch('/api/verify-token', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                document.getElementById("login-section").style.display = "none";
-                document.getElementById("todo-section").style.display = "block";
-            } else {
-                document.getElementById("login-section").style.display = "block";
-                document.getElementById("todo-section").style.display = "none";
-                localStorage.removeItem('token'); // Remove invalid token
-            }
-        })
-        .catch(error => {
-            console.error('Error verifying token:', error);
+    })
+    .then(response => {
+        if (response.ok) {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("todo-section").style.display = "block";
+        } else {
             document.getElementById("login-section").style.display = "block";
             document.getElementById("todo-section").style.display = "none";
             localStorage.removeItem('token'); // Remove invalid token
-        });
-    } else {
+        }
+    })
+    .catch(error => {
+        console.error('Error verifying token:', error);
         document.getElementById("login-section").style.display = "block";
         document.getElementById("todo-section").style.display = "none";
-    }
+        localStorage.removeItem('token'); // Remove invalid token
+    });
+} else {
+    document.getElementById("login-section").style.display = "block";
+    document.getElementById("todo-section").style.display = "none";
+}
 }
 
-        
+    
 
-        // Call checkLoginStatus on page load
+    // Call checkLoginStatus on page load
 window.onload = () => {
-    checkLoginStatus(); // Check if the user is logged in and update UI
+checkLoginStatus(); // Check if the user is logged in and update UI
 
-    // Load dark mode preference
-    const darkMode = localStorage.getItem('darkMode');
-    if (darkMode === 'enabled') {
-        document.body.classList.add('dark-mode'); // Apply dark mode styles
-        document.getElementById('dark-mode-switch').checked = true; // Set dark mode toggle
-    }
+// Load dark mode preference
+const darkMode = localStorage.getItem('darkMode');
+if (darkMode === 'enabled') {
+    document.body.classList.add('dark-mode'); // Apply dark mode styles
+    document.getElementById('dark-mode-switch').checked = true; // Set dark mode toggle
+}
 };
 
 
-        // Dark Mode Toggle
-        function toggleDarkMode() {
-            const isChecked = document.getElementById('dark-mode-switch').checked;
-            if (isChecked) {
-                document.body.classList.add('dark-mode');
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('darkMode', 'disabled');
-            }
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+        const isChecked = document.getElementById('dark-mode-switch').checked;
+        if (isChecked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('darkMode', 'enabled');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('darkMode', 'disabled');
         }
-    </script>
+    }
+</script>
 </body>
 </html>
