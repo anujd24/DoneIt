@@ -1,0 +1,333 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Full-page styling for the app */
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../Assets/bg.png");
+    background-size: cover;
+    overflow: auto; /* Allow scrolling if content exceeds viewport height */
+}
+
+/* App container */
+#app {
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh; /* Limit height to 80% of the viewport height */
+    height: auto;
+    padding: 20px;
+    background-color: rgba(244, 189, 189, 0.8); /* Slightly transparent background */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    box-sizing: border-box;
+    overflow-y: auto; /* Allow vertical scrolling */
+}
+
+/* Header styling */
+h1 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 2.5em;
+    font-weight: bold;
+}
+
+/* Input and button styling */
+input[type="text"], input[type="date"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 10px; /* Add margin for spacing between inputs */
+}
+
+select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #040b01;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Todo item styling */
+#todos {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item.low {
+    border-left: 5px solid #28a745; /* Green */
+}
+
+.todo-item.medium {
+    border-left: 5px solid #ffc107; /* Yellow */
+}
+
+.todo-item.high {
+    border-left: 5px solid #dc3545; /* Red */
+}
+
+.todo-item.done {
+    background-color: #e0f7e0;
+    border-color: #b2dfb2;
+}
+
+.todo-item > div {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.todo-item .due-date {
+    font-style: italic;
+    color: #666;
+}
+
+.todo-item .priority {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.todo-item > button {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 5px 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.todo-item > button.mark-done {
+    background-color: #28a745;
+}
+
+.todo-item > button.mark-done:hover {
+    background-color: #218838;
+}
+
+.todo-item > button.edit-btn {
+    background-color: #ffc107;
+}
+
+.todo-item > button.edit-btn:hover {
+    background-color: #e0a800;
+}
+
+.todo-item > button.delete-btn {
+    background-color: #dc3545;
+}
+
+.todo-item > button.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Edit form styling */
+.edit-form {
+    margin-top: 10px;
+}
+
+.edit-form input, .edit-form select {
+    display: block;
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.edit-form button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.edit-form button.save-btn {
+    background-color: #28a745;
+}
+
+.edit-form button.save-btn:hover {
+    background-color: #218838;
+}
+
+.edit-form button.cancel-btn {
+    background-color: #dc3545;
+}
+
+.edit-form button.cancel-btn:hover {
+    background-color: #c82333;
+}
+
+#search-bar {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+#category-filter {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.todo-item > div {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.todo-item .category {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.todo-item .due-date {
+    font-size: 14px;
+    color: #666;
+}
+
+.todo-item .priority {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.edit-form input[type="text"],
+.edit-form input[type="date"],
+.edit-form select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.progress-container {
+    width: 100%;
+    background-color: #f3f3f3;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    padding: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    height: 20px;
+    background-color: #4caf50; /* Green color for completed progress */
+    width: 0%; /* Default to 0% width */
+    border-radius: 4px;
+    transition: width 0.3s ease-in-out;
+    text-align: center;
+    color: #fff;
+    line-height: 20px; /* Center text vertically */
+}
+
+
+.progress-text {
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.todo-item.dragging {
+    background-color: #e0e0e0; /* Change background color when dragging */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow to indicate drag */
+    cursor: grabbing; /* Change cursor to grabbing while dragging */
+}
+
+.subtask-container {
+    margin-top: 10px;
+    margin-left: 20px;
+}
+
+.subtask-input {
+    width: 80%;
+    padding: 5px;
+    margin-right: 5px;
+}
+
+.add-subtask-btn {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.subtask-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 10px;
+}
+
+.subtask-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.subtask-item .subtask-done-btn {
+    margin-left: 10px;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
+.subtask-done {
+    text-decoration: line-through;
+    color: gray;
+}

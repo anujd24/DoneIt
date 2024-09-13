@@ -3,271 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoneIt/title>
+    <link rel="stylesheet" href="todoStyle.css">
+    <title>DoneIt</title>
 </head>
 <body>
-    <div id="todo-section" style="display:none;">
-        <h2>Your Todos</h2>
-        <div id="todo-form">
-            <div class="form-group">
-                <input type="text" placeholder="Title" id="title">
+    <div id="app">
+        <h1>Welcome to DoneIt!</h1>
+        <input type="text" id="title" placeholder="Todo title">
+        <input type="text" id="description" placeholder="Todo description">
+        <input type="date" id="due-date">
+        <select id="priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+        </select>
+        <select id="category">
+            <option value="" selected>Choose a category</option>
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+        </select>
+        <button onclick="addtodo()">Add Todo</button>
+
+        <input type="text" id="search-bar" placeholder="Search todos...">
+        <select id="category-filter">
+            <option value="">All Categories</option>
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+        </select>
+
+        <!-- Progress bar -->
+        <div id="progress-container">
+            <span id="progress-text">0% Complete</span>
+            <div id="progress-bar">
+                <div id="progress-fill"></div>
             </div>
-            <div class="form-group">
-                <input type="text" placeholder="Description" id="description">
-            </div>
-            <div class="form-group">
-                <input type="datetime-local" id="reminder" placeholder="Set a reminder">
-            </div>
-            <div class="form-group">
-                <input type="number" id="timer" placeholder="Timer in minutes">
-            </div>
-            <button onclick="addtodo()">Add Todo</button>
         </div>
+
         <div id="todos"></div>
-        <a href="/logout"><button>Logout</button></a>
     </div>
-</div>
 
-<script>
-    let globalid = 1;
+    <script>
+        let globalId = 1;
+        let draggedTodo = null; // Track dragged todo
 
-    function markasdone(todoID) {
-        const parent = document.getElementById(todoID);
-        parent.children[4].innerHTML = "Done!";
-        parent.classList.add('done');
-    }
-
-    function deleteTodo(todoID) {
-        const todo = document.getElementById(todoID);
-        clearInterval(todo.timer);
-        todo.remove();
-    }
-
-    function editTodo(todoID) {
-        const todo = document.getElementById(todoID);
-        const titleElem = todo.children[0];
-        const descElem = todo.children[1];
-        const reminderElem = todo.children[2];
-        const timerElem = todo.children[3];
-
-        // Replace the elements with input fields to allow editing
-        const titleInput = document.createElement("input");
-        titleInput.type = "text";
-        titleInput.value = titleElem.innerText;
-        titleElem.replaceWith(titleInput);
-
-        const descInput = document.createElement("input");
-        descInput.type = "text";
-        descInput.value = descElem.innerText;
-        descElem.replaceWith(descInput);
-
-        const reminderInput = document.createElement("input");
-        reminderInput.type = "datetime-local";
-        const reminderDate = new Date(reminderElem.innerText.split(': ')[1]);
-        reminderInput.value = reminderDate.toISOString().slice(0, -8);
-        reminderElem.replaceWith(reminderInput);
-
-        const timerInput = document.createElement("input");
-        timerInput.type = "number";
-        timerInput.value = timerElem.innerText.split(': ')[1].split(' ')[0];
-        timerElem.replaceWith(timerInput);
-
-        // Change the "Edit" button to a "Save" button
-        const editButton = todo.children[6];
-        editButton.innerHTML = "Save";
-        editButton.setAttribute("onclick", `saveTodo(${todoID})`);
-    }
-
-    function saveTodo(todoID) {
-        const todo = document.getElementById(todoID);
-        const titleInput = todo.children[0];
-        const descInput = todo.children[1];
-        const reminderInput = todo.children[2];
-        const timerInput = todo.children[3];
-
-        // Replace the input fields back to text
-        const titleElem = document.createElement("div");
-        titleElem.innerHTML = `<strong>${titleInput.value}</strong>`;
-        titleInput.replaceWith(titleElem);
-
-        const descElem = document.createElement("div");
-        descElem.innerHTML = descInput.value;
-        descInput.replaceWith(descElem);
-
-        const reminderElem = document.createElement("div");
-        reminderElem.innerHTML = `Reminder: ${new Date(reminderInput.value).toLocaleString()}`;
-        reminderInput.replaceWith(reminderElem);
-
-        const timerElem = document.createElement("div");
-        timerElem.innerHTML = `Timer: ${timerInput.value} mins`;
-        timerInput.replaceWith(timerElem);
-
-        // Reset the "Save" button back to "Edit"
-        const editButton = todo.children[6];
-        editButton.innerHTML = "Edit";
-        editButton.setAttribute("onclick", `editTodo(${todoID})`);
-
-        // Update the reminder and timer functionality if necessary
-        clearTimeout(todo.timer);
-        setTimer(parseInt(timerInput.value), todoID);
-        setReminder(reminderInput.value, todoID);
-    }
-
-    function createChild(title, description, reminder, timer, id) {
-        if (!title || !description) {
-            console.error("Title or description is missing.");
-            return null;
+        function updateProgress() {
+            const todos = document.querySelectorAll(".todo-item");
+            const total = todos.length;
+            const done = document.querySelectorAll(".todo-item .mark-done-button[disabled]").length;
+            const percentage = total === 0 ? 0 : Math.round((done / total) * 100);
+            
+            const progressBar = document.getElementById("progress-fill");
+            const progressText = document.getElementById("progress-text");
+            
+            progressBar.style.width = `${percentage}%`;
+            progressText.innerHTML = `${percentage}% Complete`;
         }
 
-        const child = document.createElement("div");
-        child.classList.add('todo-item');
-        child.setAttribute("id", id);
+        function markAsDone(todoID) {
+            const todo = document.getElementById(todoID);
+            const button = todo.querySelector(".mark-done-button");
+            button.innerHTML = "Done!";
+            button.disabled = true;
+            updateProgress(); // Update progress after marking as done
+        }
 
-        const firstgrandchild = document.createElement("div");
-        firstgrandchild.innerHTML = `<strong>${title}</strong>`;
-        const secondgrandchild = document.createElement("div");
-        secondgrandchild.innerHTML = description;
-
-        const reminderElem = document.createElement("div");
-        reminderElem.innerHTML = `Reminder: ${new Date(reminder).toLocaleString()}`;
-
-        const timerElem = document.createElement("div");
-        timerElem.innerHTML = `Timer: ${timer} mins`;
-
-        const markButton = document.createElement("button");
-        markButton.innerHTML = "Mark as Done";
-        markButton.setAttribute("onclick", `markasdone(${id})`);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.innerHTML = "Delete";
-        deleteButton.setAttribute("onclick", `deleteTodo(${id})`);
-
-        const editButton = document.createElement("button");
-        editButton.innerHTML = "Edit";
-        editButton.setAttribute("onclick", `editTodo(${id})`);
-
-        child.appendChild(firstgrandchild);
-        child.appendChild(secondgrandchild);
-        child.appendChild(reminderElem);
-        child.appendChild(timerElem);
-        child.appendChild(markButton);
-        child.appendChild(deleteButton);
-        child.appendChild(editButton);
-
-        console.log("Child element created:", child);
-
-        return child;
-    }
-
-    async function addtodo() {
-        const title = document.getElementById("title").value;
-        const description = document.getElementById("description").value;
-        const reminder = document.getElementById("reminder").value;
-        const timer = document.getElementById("timer").value;
-
-        try {
-            const response = await fetch('/api/todos', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ title, description, reminder, timer })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to add todo');
+        function editTodo() {
+            const todoID = this.parentElement.id;
+            const title = this.parentElement.querySelector(".title");
+            const description = this.parentElement.querySelector(".description");
+            const dueDate = this.parentElement.querySelector(".due-date");
+            const priority = this.parentElement.querySelector(".priority");
+            
+            const editForm = this.parentElement.querySelector(".edit-form");
+            editForm.style.display = editForm.style.display === "none" ? "block" : "none";
+            
+            if (editForm.style.display === "block") {
+                editForm.querySelector(".edit-title").value = title.innerHTML;
+                editForm.querySelector(".edit-description").value = description.innerHTML;
+                editForm.querySelector(".edit-due-date").value = dueDate.innerHTML;
+                editForm.querySelector(".edit-priority").value = priority.className.split(' ')[1];
             }
-
-            const newTodo = await response.json();
-            const parent = document.getElementById("todos");
-            const newTask = createChild(title, description, reminder, timer, newTodo._id);
-            parent.appendChild(newTask);
-        } catch (error) {
-            alert(error.message);
         }
-    }
 
-    function setReminder(reminder, id) {
-        const reminderTime = new Date(reminder).getTime();
-        const currentTime = new Date().getTime();
-        const timeDiff = reminderTime - currentTime;
+        function saveEdit() {
+            const todoID = this.parentElement.parentElement.id;
+            const title = this.parentElement.querySelector(".edit-title").value;
+            const description = this.parentElement.querySelector(".edit-description").value;
+            const dueDate = this.parentElement.querySelector(".edit-due-date").value;
+            const priority = this.parentElement.querySelector(".edit-priority").value;
 
-        if (timeDiff > 0) {
-            setTimeout(() => {
-                alert(`Reminder for Todo #${id}: Time to complete your task!`);
-            }, timeDiff);
+            const todo = document.getElementById(todoID);
+            todo.querySelector(".title").innerHTML = title;
+            todo.querySelector(".description").innerHTML = description;
+            todo.querySelector(".due-date").innerHTML = dueDate;
+            todo.querySelector(".priority").className = `priority ${priority}`;
+            
+            this.parentElement.style.display = "none";
         }
-    }
 
-    function setTimer(timer, id) {
-        const timeInMs = timer * 60000;
-        const todo = document.getElementById(id);
-        todo.timer = setTimeout(() => {
-            alert(`Timer for Todo #${id}: Time is up!`);
-        }, timeInMs);
-    }
-
-    function checkLoginStatus() {
-const token = localStorage.getItem('token');
-
-if (token) {
-    // Verify token with backend
-    fetch('/api/verify-token', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        function cancelEdit() {
+            this.parentElement.style.display = "none";
         }
-    })
-    .then(response => {
-        if (response.ok) {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("todo-section").style.display = "block";
-        } else {
-            document.getElementById("login-section").style.display = "block";
-            document.getElementById("todo-section").style.display = "none";
-            localStorage.removeItem('token'); // Remove invalid token
+
+        function deleteTodo() {
+            const todoID = this.parentElement.id;
+            const todo = document.getElementById(todoID);
+            todo.remove();
+            updateProgress(); // Update progress after deleting a todo
         }
-    })
-    .catch(error => {
-        console.error('Error verifying token:', error);
-        document.getElementById("login-section").style.display = "block";
-        document.getElementById("todo-section").style.display = "none";
-        localStorage.removeItem('token'); // Remove invalid token
+
+        function filterByCategory() {
+            const selectedCategory = document.getElementById("category-filter").value;
+            const todos = document.querySelectorAll(".todo-item");
+
+            todos.forEach(todo => {
+                const todoCategory = todo.querySelector(".category").innerHTML;
+                if (selectedCategory === "" || selectedCategory === todoCategory) {
+                    todo.style.display = "flex";
+                } else {
+                    todo.style.display = "none";
+                }
+            });
+        }
+
+        function searchTodos() {
+            const searchTerm = document.getElementById("search-bar").value.toLowerCase();
+            const todos = document.querySelectorAll(".todo-item");
+
+            todos.forEach(todo => {
+                const title = todo.querySelector(".title").innerHTML.toLowerCase();
+                const description = todo.querySelector(".description").innerHTML.toLowerCase();
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    todo.style.display = "flex";
+                } else {
+                    todo.style.display = "none";
+                }
+            });
+        }
+
+       function createChild(title, description, dueDate, priority, category, id) {
+    const child = document.createElement("div");
+    child.className = `todo-item ${priority}`;
+    child.setAttribute("id", id);
+
+    const titleElement = document.createElement("div");
+    titleElement.className = "title";
+    titleElement.innerHTML = title;
+
+    const descriptionElement = document.createElement("div");
+    descriptionElement.className = "description";
+    descriptionElement.innerHTML = description;
+
+    const dueDateElement = document.createElement("div");
+    dueDateElement.className = "due-date";
+    dueDateElement.innerHTML = dueDate;
+
+    const priorityElement = document.createElement("div");
+    priorityElement.className = `priority ${priority}`;
+    priorityElement.innerHTML = priority.charAt(0).toUpperCase() + priority.slice(1);
+
+    const categoryElement = document.createElement("div");
+    categoryElement.className = "category";
+    categoryElement.innerHTML = category;
+
+    const statusElement = document.createElement("div");
+    statusElement.className = "status";
+
+    // Subtask section
+    const subtaskContainer = document.createElement("div");
+    subtaskContainer.className = "subtask-container";
+
+    const subtaskInput = document.createElement("input");
+    subtaskInput.type = "text";
+    subtaskInput.className = "subtask-input";
+    subtaskInput.placeholder = "Add a subtask...";
+
+    const addSubtaskButton = document.createElement("button");
+    addSubtaskButton.innerHTML = "Add Subtask";
+    addSubtaskButton.className = "add-subtask-btn";
+    addSubtaskButton.onclick = () => addSubtask(id);
+
+    subtaskContainer.appendChild(subtaskInput);
+    subtaskContainer.appendChild(addSubtaskButton);
+
+    // Subtask list
+    const subtaskList = document.createElement("ul");
+    subtaskList.className = "subtask-list";
+
+    subtaskContainer.appendChild(subtaskList);
+
+    const doneButton = document.createElement("button");
+    doneButton.className = "mark-done-button";
+    doneButton.innerHTML = "Mark as Done";
+    doneButton.setAttribute("onclick", `markAsDone(${id})`);
+
+    const editButton = document.createElement("button");
+    editButton.className = "edit-btn";
+    editButton.innerHTML = "Edit";
+    editButton.setAttribute("onclick", `editTodo.call(this)`);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "delete-btn";
+    deleteButton.innerHTML = "Delete";
+    deleteButton.setAttribute("onclick", `deleteTodo.call(this)`);
+
+    const editForm = document.createElement("div");
+    editForm.className = "edit-form";
+    editForm.style.display = "none";
+
+    const editTitleInput = document.createElement("input");
+    editTitleInput.className = "edit-title";
+    editTitleInput.type = "text";
+    editTitleInput.placeholder = "Edit title";
+
+    const editDescriptionInput = document.createElement("input");
+    editDescriptionInput.className = "edit-description";
+    editDescriptionInput.type = "text";
+    editDescriptionInput.placeholder = "Edit description";
+
+    const editDueDateInput = document.createElement("input");
+    editDueDateInput.className = "edit-due-date";
+    editDueDateInput.type = "date";
+
+    const editPrioritySelect = document.createElement("select");
+    editPrioritySelect.className = "edit-priority";
+    ["low", "medium", "high"].forEach(p => {
+        const option = document.createElement("option");
+        option.value = p;
+        option.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+        if (p === priority) option.selected = true;
+        editPrioritySelect.appendChild(option);
     });
-} else {
-    document.getElementById("login-section").style.display = "block";
-    document.getElementById("todo-section").style.display = "none";
+
+    const saveButton = document.createElement("button");
+    saveButton.innerHTML = "Save";
+    saveButton.setAttribute("onclick", `saveEdit.call(this)`);
+
+    const cancelButton = document.createElement("button");
+    cancelButton.innerHTML = "Cancel";
+    cancelButton.setAttribute("onclick", `cancelEdit.call(this)`);
+
+    editForm.appendChild(editTitleInput);
+    editForm.appendChild(editDescriptionInput);
+    editForm.appendChild(editDueDateInput);
+    editForm.appendChild(editPrioritySelect);
+    editForm.appendChild(saveButton);
+    editForm.appendChild(cancelButton);
+
+    child.appendChild(titleElement);
+    child.appendChild(descriptionElement);
+    child.appendChild(dueDateElement);
+    child.appendChild(priorityElement);
+    child.appendChild(categoryElement);
+    child.appendChild(statusElement);
+    child.appendChild(subtaskContainer); // Add the subtask section here
+    child.appendChild(doneButton);
+    child.appendChild(editButton);
+    child.appendChild(deleteButton);
+    child.appendChild(editForm);
+
+    return child;
 }
-}
-
-    
-
-    // Call checkLoginStatus on page load
-window.onload = () => {
-checkLoginStatus(); // Check if the user is logged in and update UI
-
-// Load dark mode preference
-const darkMode = localStorage.getItem('darkMode');
-if (darkMode === 'enabled') {
-    document.body.classList.add('dark-mode'); // Apply dark mode styles
-    document.getElementById('dark-mode-switch').checked = true; // Set dark mode toggle
-}
-};
 
 
-    // Dark Mode Toggle
-    function toggleDarkMode() {
-        const isChecked = document.getElementById('dark-mode-switch').checked;
-        if (isChecked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('darkMode', 'enabled');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('darkMode', 'disabled');
+        function addtodo() {
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            const dueDate = document.getElementById("due-date").value;
+            const priority = document.getElementById("priority").value;
+            const category = document.getElementById("category").value;
+            const id = globalId++;
+
+            const todo = createChild(title, description, dueDate, priority, category, id);
+            document.getElementById("todos").appendChild(todo);
+
+            updateProgress();
         }
+
+        document.getElementById("category-filter").addEventListener("change", filterByCategory);
+        document.getElementById("search-bar").addEventListener("input", searchTodos);
+
+        function addSubtask(todoID) {
+    const todo = document.getElementById(todoID);
+    const subtaskInput = todo.querySelector(".subtask-input");
+    const subtaskText = subtaskInput.value.trim();
+
+    if (subtaskText !== "") {
+        const subtaskList = todo.querySelector(".subtask-list");
+        
+        const subtaskItem = document.createElement("li");
+        subtaskItem.className = "subtask-item";
+        
+        const subtaskTextElement = document.createElement("span");
+        subtaskTextElement.innerHTML = subtaskText;
+        
+        const subtaskDoneButton = document.createElement("button");
+        subtaskDoneButton.className = "subtask-done-btn";
+        subtaskDoneButton.innerHTML = "Done";
+        subtaskDoneButton.onclick = function() {
+            subtaskItem.classList.toggle("subtask-done");
+            subtaskDoneButton.disabled = true;
+        };
+
+        subtaskItem.appendChild(subtaskTextElement);
+        subtaskItem.appendChild(subtaskDoneButton);
+        subtaskList.appendChild(subtaskItem);
+
+        subtaskInput.value = ""; // Clear input after adding subtask
     }
-</script>
+}
+
+
+    </script>
 </body>
 </html>
