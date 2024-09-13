@@ -1,17 +1,17 @@
+// backend/index.js
 const express = require('express');
 const mongoose = require('mongoose');
-const path = require('path');
+const authRoutes = require('./routes/auth');
+const todoRoutes = require('./routes/todos');
 require('dotenv').config();
 
 
-
 const app = express();
-
 app.use(express.json());
-app.use("/")
 
+app.use('/auth', authRoutes);
+app.use('/todos', todoRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+mongoose.connect(process.env.MONGODB_URI);
+
+app.listen(300, () => console.log('Server running on port 3000'));
