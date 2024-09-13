@@ -10,7 +10,7 @@
     <div class="signup-container">
         <div class="signup-box">
             <h1>Create an Account</h1>
-            <form action="/signup" method="POST" class="signup-form">
+            <form class="signup-form">
                 <div class="input-group">
                     <input type="text" id="name" name="name" required placeholder="Enter your name">
                 </div>
@@ -30,5 +30,33 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+    
+            fetch('/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.userId) {
+                    window.location.href = '/login.html'; // Redirect to login page after signup
+                } else {
+                    console.error('Signup failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error during signup:', error);
+            });
+        });
+        </script>
 </body>
 </html>

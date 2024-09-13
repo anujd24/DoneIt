@@ -7,14 +7,26 @@ const router = express.Router();
 router.use(authMiddleware); // Apply middleware to all routes in this file
 
 router.post('/', async (req, res) => {
-    const { title, description, dueDate, priority, category, subtasks } = req.body;
+    const { title, description, dueDate, priority, category, subtasks, reminder, timer, completed } = req.body;
     try {
-        const todo = await Todo.create({ title, description, dueDate, priority, category, subtasks, userId: req.userId });
+        const todo = await Todo.create({
+            title,
+            description,
+            dueDate,
+            priority,
+            category,
+            subtasks,
+            reminder,
+            timer,
+            completed,
+            userId: req.userId
+        });
         res.status(201).json(todo);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 router.get('/', async (req, res) => {
     try {
