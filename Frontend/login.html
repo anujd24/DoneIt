@@ -26,5 +26,40 @@
             </form>
         </div>
     </div>
+    <form id="loginForm">
+        <input type="text" id="username" name="username" required>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Login</button>
+    </form>
+    
+    <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('jwtToken', data.token);
+                window.location.href = '/todo'; // Redirect to the todo page
+            } else {
+                console.error('Login failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error during login:', error);
+        });
+    });
+    </script>
+    
 </body>
 </html>

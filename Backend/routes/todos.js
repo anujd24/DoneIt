@@ -1,7 +1,7 @@
 // backend/routes/todos.js
 const express = require('express');
 const Todo = require('../models/Todo.js');
-const authMiddleware = require('../middleware/auth.js'); // Import the middleware
+const authMiddleware = require('../middlewares/auth.js'); // Import the middleware
 const router = express.Router();
 
 router.use(authMiddleware); // Apply middleware to all routes in this file

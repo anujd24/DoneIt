@@ -14,6 +14,24 @@ const todoSchema = new mongoose.Schema({
     description: { 
         type: String 
     },
+    dueDate: { 
+        type: Date 
+    },
+    priority: { 
+        type: String, 
+        enum: ['low', 'medium', 'high'], // You can adjust priorities as needed
+        default: 'medium'
+    },
+    category: { 
+        type: String 
+    },
+    subtasks: [{ 
+        title: String, 
+        completed: { 
+            type: Boolean, 
+            default: false 
+        } 
+    }],
     reminder: { 
         type: Date 
     },
